@@ -22,7 +22,7 @@ function varargout = voice_recording_tool(varargin)
 
 % Edit the above text to modify the response to help voice_recording_tool
 
-% Last Modified by GUIDE v2.5 29-May-2018 00:48:59
+% Last Modified by GUIDE v2.5 29-May-2018 11:44:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -53,11 +53,12 @@ function voice_recording_tool_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to voice_recording_tool (see VARARGIN)
 
 % set the sample rate (Hz)
-handles.Fs       = 16000;
+handles.Fs       = 48000;
 % create the recorder
-handles.recorder = audiorecorder(handles.Fs,8,1);
+handles.recorder = audiorecorder(handles.Fs,16,1);
 
 handles.counter = 1;
+feature('DefaultCharacterSet','UTF-8');
 
 set(handles.counter_info, 'String', ['Current counter: ', num2str(handles.counter)]);
 set(handles.sentence_field, 'String', '');
@@ -106,6 +107,10 @@ handles.y = getaudiodata(handles.recorder);
 set(handles.console, 'String', 'Recording stopped.');
 disp('Recording stopped.');
 plot(handles.y);
+% save file
+filename = [handles.filename, '_', num2str(handles.counter), '.wav'];
+audiowrite(filename, handles.y, handles.Fs);
+set(handles.console, 'String', ['The record is saved to ', filename]);
 guidata(hObject, handles);
 
 
@@ -158,7 +163,7 @@ function Save_button_Callback(hObject, eventdata, handles)
 % hObject    handle to Save_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-filename = [num2str(handles.counter), '.wav'];
+filename = [handles.filename, '_', num2str(handles.counter), '.wav'];
 audiowrite(filename, handles.y, handles.Fs);
 set(handles.console, 'String', ['The record is saved to ', filename]);
 
@@ -179,6 +184,7 @@ function Load_text_file_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 [filename, filepath]=uigetfile({'*.txt','All Files'}, 'Select a txt file');
+handles.filename = filename;
 set(handles.console, 'String', [filepath, filename, ' is loaded.']);
 fileID = fopen([filepath, filename]);
 handles.text_data = textscan(fileID, '%s',...
@@ -188,4 +194,3 @@ handles.counter = 1;
 set(handles.counter_info, 'String', ['Current counter: ', num2str(handles.counter)]);
 set(handles.sentence_field, 'String', handles.text_data{1}{handles.counter});
 guidata(hObject, handles);
-
